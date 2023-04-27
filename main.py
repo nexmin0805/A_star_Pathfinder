@@ -4,6 +4,7 @@ from queue import PriorityQueue
 import random
 import argparse
 
+
 class Cell:
     def __init__(self, row, col, width, total_rows):
         self.row = row
@@ -157,6 +158,7 @@ def draw_grid(win, rows, width):
         for j in range(rows):
             pygame.draw.line(win, (128, 128, 128), (j * gap, 0), (j * gap, width))
 
+
 def draw(win, grid, rows, width, manhattan_checked, euclidean_checked):
     win.fill((255, 255, 255))
 
@@ -218,6 +220,7 @@ def draw_buttons(win, width, manhattan_checked, euclidean_checked):
     if euclidean_checked:
         pygame.draw.rect(win, (0, 0, 0), (626, 156, 13, 13))
 
+
 def handle_buttons(pos, width):
     x, y = pos
     if 10 <= x <= 200 and width + 10 <= y <= width + 60:
@@ -237,8 +240,8 @@ def main(win, width, rows, inc_obstacle_ratio):
     grid = make_grid(rows, width)
     heuristic = "manhattan"
 
-    START_ROW, START_COL = 2, math.ceil(rows/2)
-    END_ROW, END_COL =  rows - 3, math.ceil(rows/2)
+    START_ROW, START_COL = 2, math.ceil(rows / 2)
+    END_ROW, END_COL = rows - 3, math.ceil(rows / 2)
 
     start = grid[START_ROW][START_COL]
     end = grid[END_ROW][END_COL]
@@ -273,6 +276,8 @@ def main(win, width, rows, inc_obstacle_ratio):
                         dragging_start = True
                     elif cell == end:
                         dragging_end = True
+                    elif not cell.is_wall():
+                        cell.make_wall()
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 dragging_start = False
@@ -293,6 +298,14 @@ def main(win, width, rows, inc_obstacle_ratio):
                                 end.reset()
                                 end = new_cell
                                 end.make_end()
+                else:
+                    if pygame.mouse.get_pressed()[0]:  # Left Mouse Button
+                        pos = pygame.mouse.get_pos()
+                        row, col = get_clicked_pos(pos, rows, width)
+                        if 0 <= row < rows and 0 <= col < rows:
+                            cell = grid[row][col]
+                            if cell != start and cell != end and not cell.is_wall():  # Add condition to exclude start and end points
+                                cell.make_wall()
 
             if pygame.mouse.get_pressed()[0]:  # Left Mouse Button
                 pos = pygame.mouse.get_pos()
@@ -304,7 +317,8 @@ def main(win, width, rows, inc_obstacle_ratio):
                                 for cell in row:
                                     cell.update_neighbors(grid)
 
-                            a_star(lambda: draw(win, grid, rows, width, manhattan_checked, euclidean_checked), grid, start, end, heuristic)
+                            a_star(lambda: draw(win, grid, rows, width, manhattan_checked, euclidean_checked), grid,
+                                   start, end, heuristic)
 
                             started = False
                     elif button_action == "random_walls":
@@ -316,9 +330,11 @@ def main(win, width, rows, inc_obstacle_ratio):
                                 grid[row][col].make_wall()
 
                     elif button_action == "reset":
-                        start = None
-                        end = None
-                        grid = make_grid(rows, width)
+                        for row in grid:
+                            for cell in row:
+                                if cell != start and cell != end:
+                                    cell.reset()
+
 
                     elif button_action == "manhattan":
                         heuristic = "manhattan"
@@ -330,40 +346,18 @@ def main(win, width, rows, inc_obstacle_ratio):
                         manhattan_checked = False
                         euclidean_checked = True
 
-                else:
-                    row, col = get_clicked_pos(pos, rows, width)
-                    if 0 <= row < rows and 0 <= col < rows:
-                        cell = grid[row][col]
                     else:
-                        cell = None
+                        row, col = get_clicked_pos(pos, rows, width)
+                        if 0 <= row < rows and 0 <= col < rows:
+                            cell = grid[row][col]
+                        else:
+                            cell = None
 
-                    if cell:
-                        if not start and cell != end:
-                            start = cell
-                            start.make_start()
-                        elif not end and cell != start:
-                            end = cell
-                            end.make_end()
-                        elif cell != end and cell != start:
+                        if cell and cell != start and cell != end:  # Add condition to exclude start and end points
                             if cell.is_wall():
                                 cell.reset()
                             else:
                                 cell.make_wall()
-
-            elif pygame.mouse.get_pressed()[2]:  # Right Mouse Button
-                pos = pygame.mouse.get_pos()
-                row, col = get_clicked_pos(pos, rows, width)
-                if 0 <= row < rows and 0 <= col < rows:
-                    cell = grid[row][col]
-                else:
-                    cell = None
-
-                if cell:
-                    cell.reset()
-                    if cell == start:
-                        start = None
-                    elif cell == end:
-                        end = None
 
     pygame.quit()
 
