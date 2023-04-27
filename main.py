@@ -4,7 +4,6 @@ from queue import PriorityQueue
 import random
 import argparse
 
-
 class Cell:
     def __init__(self, row, col, width, total_rows):
         self.row = row
@@ -185,17 +184,17 @@ def get_clicked_pos(pos, rows, width):
 
 
 def draw_buttons(win, width, manhattan_checked, euclidean_checked):
-    start_button = pygame.Rect(10, width + 10, 190, 50)
+    start_button = pygame.Rect(10, width + 25, 190, 50)
     pygame.draw.rect(win, (135, 206, 235), start_button)
-    win.blit(pygame.font.Font(None, 28).render("Start A* Search", True, (0, 0, 0)), (30, width + 24))
+    win.blit(pygame.font.Font(None, 28).render("Start A* Search", True, (0, 0, 0)), (30, width + 39))
 
-    random_walls_button = pygame.Rect(240, width + 10, 170, 50)
+    random_walls_button = pygame.Rect(240, width + 25, 170, 50)
     pygame.draw.rect(win, (135, 206, 235), random_walls_button)
-    win.blit(pygame.font.Font(None, 28).render("Random Walls", True, (0, 0, 0)), (260, width + 24))
+    win.blit(pygame.font.Font(None, 28).render("Random Walls", True, (0, 0, 0)), (260, width + 39))
 
-    reset_button = pygame.Rect(450, width + 10, 150, 50)
+    reset_button = pygame.Rect(450, width + 25, 150, 50)
     pygame.draw.rect(win, (135, 206, 235), reset_button)
-    win.blit(pygame.font.Font(None, 28).render("Reset", True, (0, 0, 0)), (500, width + 24))
+    win.blit(pygame.font.Font(None, 28).render("Reset", True, (0, 0, 0)), (500, width + 39))
 
     manhattan_button = pygame.Rect(650, 80, 120, 30)
     pygame.draw.rect(win, (255, 255, 0), manhattan_button)
@@ -255,7 +254,6 @@ def main(win, width, rows, inc_obstacle_ratio):
 
     dragging_start = False  # Initialize dragging_start
     dragging_end = False  # Initialize dragging_end
-
 
     while run:
         draw(win, grid, rows, width, manhattan_checked, euclidean_checked)
