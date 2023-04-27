@@ -169,9 +169,6 @@ def draw(win, grid, rows, width, manhattan_checked, euclidean_checked):
     draw_buttons(win, width, manhattan_checked, euclidean_checked)
     pygame.display.update()
 
-
-
-
     draw_grid(win, rows, width)
     draw_buttons(win, width, manhattan_checked, euclidean_checked)
     pygame.display.update()
@@ -230,9 +227,9 @@ def handle_buttons(pos, width):
         return "random_walls"
     elif 450 <= x <= 600 and width + 10 <= y <= width + 60:
         return "reset"
-    elif 650 <= x <= 770 and 80 <= y <= 110:
+    elif (650 <= x <= 770 and 80 <= y <= 110) or (625 <= x <= 640 and 85 <= y <= 100):
         return "manhattan"
-    elif 650 <= x <= 770 and 150 <= y <= 180:
+    elif (650 <= x <= 770 and 150 <= y <= 180) or (625 <= x <= 640 and 155 <= y <= 170):
         return "euclidean"
     return None
 
