@@ -23,7 +23,7 @@ class Cell:
         return self.color == (255, 0, 0)
 
     def is_open(self):
-        return self.color == (0, 255, 0)
+        return self.color == (135, 206, 235)
 
     def is_wall(self):
         return self.color == (0, 0, 0)
@@ -255,11 +255,49 @@ def main(win, width, rows, inc_obstacle_ratio):
 
     manhattan_checked = True
     euclidean_checked = False
+
+    dragging_start = False  # Initialize dragging_start
+    dragging_end = False  # Initialize dragging_end
+
+
     while run:
         draw(win, grid, rows, width, manhattan_checked, euclidean_checked)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                row, col = get_clicked_pos(pos, rows, width)
+                if 0 <= row < rows and 0 <= col < rows:
+                    cell = grid[row][col]
+                else:
+                    cell = None
+
+                if cell:
+                    if cell == start:
+                        dragging_start = True
+                    elif cell == end:
+                        dragging_end = True
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                dragging_start = False
+                dragging_end = False
+
+            elif event.type == pygame.MOUSEMOTION:
+                if dragging_start or dragging_end:
+                    pos = pygame.mouse.get_pos()
+                    row, col = get_clicked_pos(pos, rows, width)
+                    if 0 <= row < rows and 0 <= col < rows:
+                        new_cell = grid[row][col]
+                        if new_cell != start and new_cell != end and not new_cell.is_wall():
+                            if dragging_start:
+                                start.reset()
+                                start = new_cell
+                                start.make_start()
+                            elif dragging_end:
+                                end.reset()
+                                end = new_cell
+                                end.make_end()
 
             if pygame.mouse.get_pressed()[0]:  # Left Mouse Button
                 pos = pygame.mouse.get_pos()
