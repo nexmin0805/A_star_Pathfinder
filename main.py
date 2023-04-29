@@ -223,17 +223,18 @@ def draw_buttons(win, width, manhattan_checked, euclidean_checked):
 
 def handle_buttons(pos, width):
     x, y = pos
-    if 10 <= x <= 200 and width + 10 <= y <= width + 60:
+    if 10 <= x <= 200 and width + 25 <= y <= width + 75:
         return "start"
-    elif 240 <= x <= 410 and width + 10 <= y <= width + 60:
+    elif 240 <= x <= 410 and width + 25 <= y <= width + 75:
         return "random_walls"
-    elif 450 <= x <= 600 and width + 10 <= y <= width + 60:
+    elif 450 <= x <= 600 and width + 25 <= y <= width + 75:
         return "reset"
     elif (650 <= x <= 770 and 80 <= y <= 110) or (625 <= x <= 640 and 85 <= y <= 100):
         return "manhattan"
     elif (650 <= x <= 770 and 150 <= y <= 180) or (625 <= x <= 640 and 155 <= y <= 170):
         return "euclidean"
     return None
+
 
 
 def main(win, width, rows, inc_obstacle_ratio):
@@ -257,6 +258,7 @@ def main(win, width, rows, inc_obstacle_ratio):
 
     dragging_start = False  # Initialize dragging_start
     dragging_end = False  # Initialize dragging_end
+    dragging_erase=False
 
     while run:
         draw(win, grid, rows, width, manhattan_checked, euclidean_checked)
@@ -276,12 +278,16 @@ def main(win, width, rows, inc_obstacle_ratio):
                         dragging_start = True
                     elif cell == end:
                         dragging_end = True
-                    elif not cell.is_wall():
+                    elif cell.is_wall():
+                        cell.reset()  # 벽을 클릭하면 벽이 사라집니다.
+                        dragging_erase = True
+                    else:
                         cell.make_wall()
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 dragging_start = False
                 dragging_end = False
+                dragging_erase = False
 
             elif event.type == pygame.MOUSEMOTION:
                 if dragging_start or dragging_end:
@@ -298,6 +304,13 @@ def main(win, width, rows, inc_obstacle_ratio):
                                 end.reset()
                                 end = new_cell
                                 end.make_end()
+                elif dragging_erase:  # 벽을 지우는 드래그 상태일 경우
+                    pos = pygame.mouse.get_pos()
+                    row, col = get_clicked_pos(pos, rows, width)
+                    if 0 <= row < rows and 0 <= col < rows:
+                        cell = grid[row][col]
+                        if cell.is_wall():
+                            cell.reset()  # 해당 위치의 벽을 지웁니다.
                 else:
                     if pygame.mouse.get_pressed()[0]:  # Left Mouse Button
                         pos = pygame.mouse.get_pos()
