@@ -170,10 +170,6 @@ def draw(win, grid, rows, width, manhattan_checked, euclidean_checked):
     draw_buttons(win, width, manhattan_checked, euclidean_checked)
     pygame.display.update()
 
-    draw_grid(win, rows, width)
-    draw_buttons(win, width, manhattan_checked, euclidean_checked)
-    pygame.display.update()
-
 
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
