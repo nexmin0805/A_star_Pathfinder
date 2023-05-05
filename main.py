@@ -1,236 +1,10 @@
 import pygame
-import math
-from queue import PriorityQueue
-import random
 import argparse
-
-
-class Cell:
-    def __init__(self, row, col, width, total_rows):
-        self.row = row
-        self.col = col
-        self.x = row * width
-        self.y = col * width
-        self.color = (255, 255, 255)
-        self.neighbors = []
-        self.width = width
-        self.total_rows = total_rows
-
-    def get_pos(self):
-        return self.row, self.col
-
-    def is_closed(self):
-        return self.color == (255, 0, 0)
-
-    def is_open(self):
-        return self.color == (135, 206, 235)
-
-    def is_wall(self):
-        return self.color == (0, 0, 0)
-
-    def is_start(self):
-        return self.color == (255, 165, 0)
-
-    def is_end(self):
-        return self.color == (0, 255, 0)
-
-    def reset(self):
-        self.color = (255, 255, 255)
-
-    def make_closed(self):
-        self.color = (255, 0, 0)
-
-    def make_open(self):
-        self.color = (135, 206, 235)
-
-    def make_wall(self):
-        self.color = (0, 0, 0)
-
-    def make_start(self):
-        self.color = (255, 165, 0)
-
-    def make_end(self):
-        self.color = (0, 255, 0)
-
-    def make_path(self):
-        self.color = (255, 255, 0)
-
-    def draw(self, win):
-        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
-
-    def update_neighbors(self, grid):
-        self.neighbors = []
-        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_wall():  # DOWN
-            self.neighbors.append(grid[self.row + 1][self.col])
-
-        if self.row > 0 and not grid[self.row - 1][self.col].is_wall():  # UP
-            self.neighbors.append(grid[self.row - 1][self.col])
-
-        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_wall():  # RIGHT
-            self.neighbors.append(grid[self.row][self.col + 1])
-
-        if self.col > 0 and not grid[self.row][self.col - 1].is_wall():  # LEFT
-            self.neighbors.append(grid[self.row][self.col - 1])
-
-    def __lt__(self, other):
-        return False
-
-
-def h(p1, p2, heuristic):
-    x1, y1 = p1
-    x2, y2 = p2
-    if heuristic == 'manhattan':
-        return abs(x1 - x2) + abs(y1 - y2)
-    elif heuristic == "euclidean":
-        return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-
-
-def reconstruct_path(came_from, current, draw):
-    while current in came_from:
-        current = came_from[current]
-        current.make_path()
-        draw()
-
-
-def a_star(draw, grid, start, end, heuristic_func):
-    count = 0
-    open_set = PriorityQueue()
-    open_set.put((0, count, start))
-    came_from = {}
-    g_score = {cell: float("inf") for row in grid for cell in row}
-    g_score[start] = 0
-    f_score = {cell: float("inf") for row in grid for cell in row}
-    f_score[start] = h(start.get_pos(), end.get_pos(), heuristic_func)
-
-    open_set_hash = {start}
-
-    while not open_set.empty():
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-
-        current = open_set.get()[2]
-        open_set_hash.remove(current)
-
-        if current == end:
-            reconstruct_path(came_from, end, draw)
-            start.make_start()
-            end.make_end()
-            return True
-
-        for neighbor in current.neighbors:
-            temp_g_score = g_score[current] + 1
-
-            if temp_g_score < g_score[neighbor]:
-                came_from[neighbor] = current
-                g_score[neighbor] = temp_g_score
-                f_score[neighbor] = temp_g_score + h(neighbor.get_pos(), end.get_pos(), heuristic_func)
-                if neighbor not in open_set_hash:
-                    count += 1
-                    open_set.put((f_score[neighbor], count, neighbor))
-                    open_set_hash.add(neighbor)
-                    neighbor.make_open()
-
-        draw()
-
-        if current != start:
-            current.make_closed()
-
-    return False
-
-
-def make_grid(rows, width):
-    grid = []
-    gap = width // rows
-    for i in range(rows):
-        grid.append([])
-        for j in range(rows):
-            cell = Cell(i, j, gap, rows)
-            grid[i].append(cell)
-
-    return grid
-
-
-def draw_grid(win, rows, width):
-    gap = width // rows
-    for i in range(rows):
-        pygame.draw.line(win, (128, 128, 128), (0, i * gap), (width, i * gap))
-        for j in range(rows):
-            pygame.draw.line(win, (128, 128, 128), (j * gap, 0), (j * gap, width))
-
-
-def draw(win, grid, rows, width, manhattan_checked, euclidean_checked):
-    win.fill((255, 255, 255))
-
-    for row in grid:
-        for cell in row:
-            cell.draw(win)
-
-    draw_grid(win, rows, width)
-    draw_buttons(win, width, manhattan_checked, euclidean_checked)
-    pygame.display.update()
-
-
-def get_clicked_pos(pos, rows, width):
-    gap = width // rows
-    y, x = pos
-
-    row = y // gap
-    col = x // gap
-
-    return row, col
-
-
-def draw_buttons(win, width, manhattan_checked, euclidean_checked):
-    start_button = pygame.Rect(10, width + 25, 190, 50)
-    pygame.draw.rect(win, (135, 206, 235), start_button)
-    win.blit(pygame.font.Font(None, 28).render("Start A* Search", True, (0, 0, 0)), (30, width + 39))
-
-    random_walls_button = pygame.Rect(240, width + 25, 170, 50)
-    pygame.draw.rect(win, (135, 206, 235), random_walls_button)
-    win.blit(pygame.font.Font(None, 28).render("Random Walls", True, (0, 0, 0)), (260, width + 39))
-
-    reset_button = pygame.Rect(450, width + 25, 150, 50)
-    pygame.draw.rect(win, (135, 206, 235), reset_button)
-    win.blit(pygame.font.Font(None, 28).render("Reset", True, (0, 0, 0)), (500, width + 39))
-
-    manhattan_button = pygame.Rect(650, 80, 120, 30)
-    pygame.draw.rect(win, (255, 255, 0), manhattan_button)
-    win.blit(pygame.font.Font(None, 28).render("Manhattan", True, (0, 0, 0)), (660, 85))
-
-    euclidean_button = pygame.Rect(650, 150, 120, 30)
-    pygame.draw.rect(win, (255, 255, 0), euclidean_button)
-    win.blit(pygame.font.Font(None, 28).render("Euclidean", True, (0, 0, 0)), (660, 155))
-
-    win.blit(pygame.font.Font(None, 40).render("Hueristic", True, (0, 0, 0)), (640, 30))
-
-    manhattan_checkbox = pygame.Rect(625, 85, 15, 15)
-    pygame.draw.rect(win, (0, 0, 0) if manhattan_checked else (255, 255, 255), manhattan_checkbox)
-    pygame.draw.rect(win, (0, 0, 0), manhattan_checkbox, 1)  # Add a border with width 1
-    if manhattan_checked:
-        pygame.draw.rect(win, (0, 0, 0), (626, 86, 13, 13))
-
-    euclidean_checkbox = pygame.Rect(625, 155, 15, 15)
-    pygame.draw.rect(win, (0, 0, 0) if euclidean_checked else (255, 255, 255), euclidean_checkbox)
-    pygame.draw.rect(win, (0, 0, 0), euclidean_checkbox, 1)  # Add a border with width 1
-    if euclidean_checked:
-        pygame.draw.rect(win, (0, 0, 0), (626, 156, 13, 13))
-
-
-def handle_buttons(pos, width):
-    x, y = pos
-    if 10 <= x <= 200 and width + 25 <= y <= width + 75:
-        return "start"
-    elif 240 <= x <= 410 and width + 25 <= y <= width + 75:
-        return "random_walls"
-    elif 450 <= x <= 600 and width + 25 <= y <= width + 75:
-        return "reset"
-    elif (650 <= x <= 770 and 80 <= y <= 110) or (625 <= x <= 640 and 85 <= y <= 100):
-        return "manhattan"
-    elif (650 <= x <= 770 and 150 <= y <= 180) or (625 <= x <= 640 and 155 <= y <= 170):
-        return "euclidean"
-    return None
-
+from screen import draw, handle_buttons, get_clicked_pos
+from block import make_grid
+from search import a_star
+import math
+import random
 
 
 def main(win, width, rows, inc_obstacle_ratio):
@@ -254,7 +28,7 @@ def main(win, width, rows, inc_obstacle_ratio):
 
     dragging_start = False  # Initialize dragging_start
     dragging_end = False  # Initialize dragging_end
-    dragging_erase=False
+    dragging_erase = False
 
     while run:
         draw(win, grid, rows, width, manhattan_checked, euclidean_checked)
@@ -306,7 +80,7 @@ def main(win, width, rows, inc_obstacle_ratio):
                     if 0 <= row < rows and 0 <= col < rows:
                         cell = grid[row][col]
                         if cell.is_wall():
-                            cell.reset()  # 해당 위치의 벽을 지웁니다.
+                            cell.reset()
                 else:
                     if pygame.mouse.get_pressed()[0]:  # Left Mouse Button
                         pos = pygame.mouse.get_pos()
@@ -326,8 +100,10 @@ def main(win, width, rows, inc_obstacle_ratio):
                                 for cell in row:
                                     cell.update_neighbors(grid)
 
-                            a_star(lambda: draw(win, grid, rows, width, manhattan_checked, euclidean_checked), grid,
-                                   start, end, heuristic)
+                            success, explored_nodes = a_star(lambda: draw(win, grid, rows, width, manhattan_checked, euclidean_checked), grid, start, end, heuristic)
+
+                            if success:
+                                print(f"Total explored nodes: {explored_nodes}")
 
                             started = False
                     elif button_action == "random_walls":
@@ -375,7 +151,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Interactive A* Pathfinding Visualizer")
     parser.add_argument("-r", "--rows", type=int, default=30, help="Number of rows (default: 30)")
     parser.add_argument("-w", "--width", type=int, default=600, help="Window width (default: 600)")
-    parser.add_argument("-o", "--obstacles", type=float, default=0.2, help="Obstacle ratio (default: 0.2)")
+    parser.add_argument("-o", "--obstacles",type=float, default=0.2, help="Obstacle ratio (default: 0.2)")
 
     args = parser.parse_args()
 
@@ -388,3 +164,5 @@ if __name__ == "__main__":
     pygame.display.set_caption("A* Path Finding Visualizer")
 
     main(WIN, WIDTH, ROWS, INC_OBSTACLE_RATIO)
+
+
