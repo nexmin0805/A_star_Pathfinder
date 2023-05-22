@@ -3,6 +3,7 @@ import math
 from queue import PriorityQueue
 
 
+#거리 계산
 def h(p1, p2, heuristic):
     x1, y1 = p1
     x2, y2 = p2
@@ -69,6 +70,7 @@ def a_star(draw, grid, start, end, heuristic_func):
     print("Path not found.")
 
     return False, count
+
 
 def no_solution_path(came_from, lowest_f_node, draw):
     current = lowest_f_node
