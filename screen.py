@@ -13,6 +13,7 @@ def draw(win, grid, rows, width, manhattan_checked, euclidean_checked):
     pygame.display.update()
 
 
+# 그리드 생성
 def draw_grid(win, rows, width):
     gap = width // rows
     for i in range(rows):
