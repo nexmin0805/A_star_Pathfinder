@@ -1,6 +1,7 @@
 import pygame
 
 
+#cell 생성
 class Cell:
     def __init__(self, row, col, width, total_rows):
         self.row = row
