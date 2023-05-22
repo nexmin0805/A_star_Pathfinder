@@ -26,8 +26,8 @@ def main(win, width, rows, inc_obstacle_ratio):
     manhattan_checked = True
     euclidean_checked = False
 
-    dragging_start = False  # Initialize dragging_start
-    dragging_end = False  # Initialize dragging_end
+    dragging_start = False
+    dragging_end = False
     dragging_erase = False
 
     while run:
@@ -49,7 +49,7 @@ def main(win, width, rows, inc_obstacle_ratio):
                     elif cell == end:
                         dragging_end = True
                     elif cell.is_wall():
-                        cell.reset()  # 벽을 클릭하면 벽이 사라집니다.
+                        cell.reset()  # 벽 리셋
                         dragging_erase = True
                     else:
                         cell.make_wall()
@@ -87,7 +87,7 @@ def main(win, width, rows, inc_obstacle_ratio):
                         row, col = get_clicked_pos(pos, rows, width)
                         if 0 <= row < rows and 0 <= col < rows:
                             cell = grid[row][col]
-                            if cell != start and cell != end and not cell.is_wall():  # Add condition to exclude start and end points
+                            if cell != start and cell != end and not cell.is_wall():
                                 cell.make_wall()
 
             if pygame.mouse.get_pressed()[0]:  # Left Mouse Button
@@ -138,7 +138,7 @@ def main(win, width, rows, inc_obstacle_ratio):
                         else:
                             cell = None
 
-                        if cell and cell != start and cell != end:  # Add condition to exclude start and end points
+                        if cell and cell != start and cell != end:
                             if cell.is_wall():
                                 cell.reset()
                             else:
@@ -164,5 +164,4 @@ if __name__ == "__main__":
     pygame.display.set_caption("A* Path Finding Visualizer")
 
     main(WIN, WIDTH, ROWS, INC_OBSTACLE_RATIO)
-
 
