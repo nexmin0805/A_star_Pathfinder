@@ -1,1 +1,1 @@
-<img width="80%" src="https://user-images.githubusercontent.com/16822641/109461495-913fc480-7aa5-11eb-9d0e-aff762669f98.gif"/>
+<img width="80%" src="https://github.com/nexmin0805/A_star_Pathfinder/assets/65328995/2e73d0c4-5678-4634-afe0-576557403793"/>
